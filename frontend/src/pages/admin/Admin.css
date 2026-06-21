@@ -1,3 +1,48 @@
+/*
+ * ═══════════════════════════════════════════════════════════════
+ * Admin Panel — Page-Specific Styles
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * This file ONLY contains styles exclusive to admin pages.
+ * The admin pages also depend on the following shared classes
+ * from index.css — DO NOT remove them from index.css without
+ * checking all files under src/pages/admin/ first:
+ *
+ *   Layout & Structure:
+ *     .card, .glass, .page-content, .container
+ *
+ *   Buttons:
+ *     .btn, .btn-primary, .btn-outline, .btn-ghost,
+ *     .btn-danger, .btn-success, .btn-warn, .btn-sm
+ *
+ *   Forms:
+ *     .form-group, .form-label, .form-input, .form-error
+ *
+ *   Tables:
+ *     .table-wrapper, table, thead, th, td, tr
+ *
+ *   Badges:
+ *     .badge, .badge-green, .badge-red, .badge-cyan,
+ *     .badge-violet, .badge-gold, .badge-gray, .badge-orange
+ *
+ *   Modals:
+ *     .modal-overlay, .modal, .modal-title
+ *
+ *   Pagination:
+ *     .pagination, .page-btn
+ *
+ *   Loading & Empty States:
+ *     .spinner, .loading-center, .empty-state
+ *
+ *   Typography:
+ *     .gradient-text, .section-tag, .divider
+ *
+ *   Animations:
+ *     .animate-fade-up, .animate-fade
+ *
+ * ═══════════════════════════════════════════════════════════════
+ */
+
 .admin-layout { display: flex; min-height: 100vh; }
 
 /* ─── Sidebar ─── */

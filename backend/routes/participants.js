@@ -6,6 +6,7 @@ const {
   getParticipantById,
   updateParticipantStatus,
   exportParticipants,
+  deleteParticipant,
 } = require('../controllers/participantController');
 const { protect, requireAdmin } = require('../middleware/auth');
 const upload = require('../middleware/upload');
@@ -20,5 +21,6 @@ router.get('/', protect, requireAdmin, getParticipants);
 router.get('/export', protect, requireAdmin, exportParticipants);
 router.get('/:id', protect, requireAdmin, getParticipantById);
 router.patch('/:id/status', protect, requireAdmin, updateParticipantStatus);
+router.delete('/:id', protect, requireAdmin, deleteParticipant);
 
 module.exports = router;

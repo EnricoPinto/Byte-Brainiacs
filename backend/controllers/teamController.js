@@ -71,10 +71,13 @@ const updateTeamStatus = async (req, res) => {
 // GET /api/teams/approved-individuals
 const getApprovedIndividuals = async (req, res) => {
   try {
+    // BUG 4 FIX: Use $or to catch both cases:
+    // - participants who never had a teamId ($exists: false)
+    // - participants whose teamId was cleared after deletion ($eq: null)
     const individuals = await Participant.find({
       registrationType: 'individual',
       status: 'approved',
-      teamId: { $exists: false },
+      $or: [{ teamId: { $exists: false } }, { teamId: null }],
     }).select('fullName email college degree yearOfStudy city');
     res.json({ success: true, individuals });
   } catch (err) {

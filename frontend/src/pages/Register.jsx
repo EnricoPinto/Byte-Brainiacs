@@ -18,6 +18,8 @@ const loadRazorpay = () => {
   });
 };
 
+const YEAR_OPTIONS = ['1st Year', '2nd Year', '3rd Year', 'Final Year', 'Postgraduate'];
+
 const MemberFields = ({ prefix, label, register, errors }) => (
   <div className="member-section">
     <h4 className="member-label">{label}</h4>
@@ -28,7 +30,6 @@ const MemberFields = ({ prefix, label, register, errors }) => (
         { name: 'mobile', label: 'Mobile', type: 'tel', required: true },
         { name: 'college', label: 'College/University', type: 'text', required: true },
         { name: 'degree', label: 'Degree/Course', type: 'text', required: true },
-        { name: 'yearOfStudy', label: 'Year of Study', type: 'text', required: true },
       ].map(f => (
         <div key={f.name} className="form-group">
           <label className="form-label">{f.label} {f.required && <span style={{ color: 'var(--red)' }}>*</span>}</label>
@@ -40,9 +41,25 @@ const MemberFields = ({ prefix, label, register, errors }) => (
           {errors?.[prefix]?.[f.name] && <span className="form-error">{errors[prefix][f.name].message}</span>}
         </div>
       ))}
+
+      {/* Year of Study — dropdown to match backend enum */}
+      <div className="form-group">
+        <label className="form-label">Year of Study <span style={{ color: 'var(--red)' }}>*</span></label>
+        <select
+          className="form-input"
+          {...register(`${prefix}.yearOfStudy`, { required: 'Year of Study is required' })}
+        >
+          <option value="">Select Year</option>
+          {YEAR_OPTIONS.map(y => (
+            <option key={y} value={y}>{y}</option>
+          ))}
+        </select>
+        {errors?.[prefix]?.yearOfStudy && <span className="form-error">⚠ {errors[prefix].yearOfStudy.message}</span>}
+      </div>
     </div>
   </div>
 );
+
 
 export default function Register() {
   const [step, setStep] = useState(0);
@@ -228,8 +245,18 @@ export default function Register() {
                 </div>
 
                 <div className="form-group form-full">
-                  <label className="form-label">College ID Card (Image/PDF, max 5MB) <span style={{ color: 'var(--red)' }}>*</span></label>
-                  <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="form-input" style={{ padding: '10px' }} {...register('collegeId', { required: 'College ID is required for verification' })} />
+                  <label className="form-label">College ID Card (JPG, PNG or PDF — max 2MB) <span style={{ color: 'var(--red)' }}>*</span></label>
+                  <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="form-input" style={{ padding: '10px' }}
+                    {...register('collegeId', {
+                      required: 'College ID is required for verification',
+                      validate: {
+                        maxSize: (files) => {
+                          if (!files?.[0]) return true;
+                          return files[0].size <= 2 * 1024 * 1024 || 'File must be 2MB or smaller';
+                        },
+                      },
+                    })}
+                  />
                   {errors.collegeId && <span className="form-error">⚠ {errors.collegeId.message}</span>}
                 </div>
               </div>

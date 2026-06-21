@@ -6,7 +6,7 @@ import './Payment.css';
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const participantId = searchParams.get('participant_id');
-  const sessionId = searchParams.get('session_id');
+  // BUG 10 FIX: Removed unused sessionId (Stripe leftover)
 
   const [loading, setLoading] = useState(true);
   const [participant, setParticipant] = useState(null);

@@ -36,8 +36,15 @@ const authLimiter = rateLimit({
   max: 10,
   message: { success: false, message: 'Too many login attempts, please try again later.' },
 });
+// BUG 6 FIX: Dedicated stricter limiter for registration endpoint
+const registrationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // max 10 registration attempts per 15 minutes per IP
+  message: { success: false, message: 'Too many registration attempts. Please try again later.' },
+});
 app.use('/api/', limiter);
 app.use('/api/auth', authLimiter);
+app.use('/api/participants/register', registrationLimiter);
 
 // (No special raw body parsing needed for Razorpay verify)
 
@@ -80,7 +87,8 @@ app.use((err, req, res, next) => {
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
-    console.log('✅ MongoDB connected:', process.env.MONGO_URI);
+    // BUG 3 FIX: Never log the full URI — it contains the DB password
+    console.log('✅ MongoDB connected successfully.');
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
       console.log(`🚀 ByteBrainiacs server running on http://localhost:${PORT}`);
@@ -90,3 +98,5 @@ mongoose
     console.error('❌ MongoDB connection failed:', err.message);
     process.exit(1);
   });
+// Force nodemon reload - env updated
+

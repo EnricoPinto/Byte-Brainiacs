@@ -4,6 +4,16 @@ import { useToast } from '../../context/ToastContext';
 import { AdminSidebar } from './Dashboard';
 import './Admin.css';
 
+const getCollegeIdUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  let normalized = url.replace(/\\/g, '/').replace(/^backend\//, '');
+  if (!normalized.startsWith('/')) {
+    normalized = '/' + normalized;
+  }
+  return normalized;
+};
+
 const STATUS_BADGE = {
   approved: 'badge-green',
   rejected: 'badge-red',
@@ -21,6 +31,7 @@ export default function ParticipantList() {
   const [status, setStatus] = useState('');
   const [selected, setSelected] = useState(null);
   const [noteModal, setNoteModal] = useState(null);
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState(null);
   const [note, setNote] = useState('');
   const toast = useToast();
   const LIMIT = 15;
@@ -46,6 +57,17 @@ export default function ParticipantList() {
       fetchData();
     } catch (err) {
       toast.error('Error', err.response?.data?.message);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`/api/participants/${id}`);
+      toast.success('Deleted!', 'Participant deleted successfully.');
+      setDeleteConfirmModal(null);
+      fetchData();
+    } catch (err) {
+      toast.error('Error', err.response?.data?.message || 'Failed to delete participant.');
     }
   };
 
@@ -133,14 +155,15 @@ export default function ParticipantList() {
                       <td>
                         <div className="actions-cell">
                           {p.status !== 'approved' && (
-                            <button className="btn btn-success btn-sm" onClick={() => handleAction(p, 'approved')}>✓</button>
+                            <button className="btn btn-success btn-sm" title="Approve Participant" onClick={() => handleAction(p, 'approved')}>✓</button>
                           )}
                           {p.status !== 'rejected' && (
-                            <button className="btn btn-danger btn-sm" onClick={() => handleAction(p, 'rejected')}>✗</button>
+                            <button className="btn btn-danger btn-sm" title="Reject Participant" onClick={() => handleAction(p, 'rejected')}>✗</button>
                           )}
-                          {p.resumeUrl && (
-                            <a href={p.resumeUrl} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm">📄</a>
+                          {p.collegeIdUrl && (
+                            <a href={getCollegeIdUrl(p.collegeIdUrl)} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm" title="View College ID">📄</a>
                           )}
+                          <button className="btn btn-danger btn-sm" style={{ padding: '4px 8px' }} title="Delete Participant" onClick={() => setDeleteConfirmModal(p)}>🗑️</button>
                         </div>
                       </td>
                     </tr>
@@ -177,6 +200,23 @@ export default function ParticipantList() {
               <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
                 <button className="btn btn-ghost" onClick={() => setNoteModal(null)}>Cancel</button>
                 <button className="btn btn-danger" onClick={() => updateStatus(noteModal.participant._id, 'rejected')}>Reject</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deleteConfirmModal && (
+          <div className="modal-overlay" onClick={() => setDeleteConfirmModal(null)}>
+            <div className="modal" onClick={e => e.stopPropagation()}>
+              <h3 className="modal-title" style={{ color: '#ff3b5c' }}>Delete Participant</h3>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '20px', lineHeight: '1.5' }}>
+                Are you sure you want to permanently delete <strong style={{ color: 'var(--text-primary)' }}>{deleteConfirmModal.fullName}</strong>?
+                This will remove their record from the database and any associated teams. This action cannot be undone.
+              </p>
+              <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                <button className="btn btn-ghost" onClick={() => setDeleteConfirmModal(null)}>Cancel</button>
+                <button className="btn btn-danger" onClick={() => handleDelete(deleteConfirmModal._id)}>Delete Permanently</button>
               </div>
             </div>
           </div>
