@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import axios from 'axios';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import './Admin.css';
@@ -13,6 +14,8 @@ export default function Dashboard() {
   const [charts, setCharts] = useState(null);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     Promise.all([
@@ -27,6 +30,27 @@ export default function Dashboard() {
   }, []);
 
   if (loading) return <div className="loading-center"><div className="spinner" /></div>;
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      toast.success('Exporting...', 'Generating Excel file...');
+      const response = await axios.get('/api/participants/export', { 
+        responseType: 'blob' 
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'ByteBrainiacs_Participants.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      toast.error('Export Failed', 'Could not download the Excel file.');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const statCards = [
     { label: 'Total Registrations', value: stats.totalParticipants, icon: '👥', color: 'var(--violet)', bg: 'rgba(99,102,241,0.1)' },
@@ -47,7 +71,9 @@ export default function Dashboard() {
             <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Welcome back, <strong>{user?.name}</strong></p>
           </div>
           <div style={{ display: 'flex', gap: '12px' }}>
-            <a href="/api/participants/export" className="btn btn-outline btn-sm">⬇ Export Excel</a>
+            <button onClick={handleExport} className="btn btn-outline btn-sm" disabled={exporting}>
+              {exporting ? '⏳ Exporting...' : '⬇ Export Excel'}
+            </button>
             <button className="btn btn-ghost btn-sm" onClick={logout}>Logout</button>
           </div>
         </div>
