@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import axios from 'axios';
@@ -194,9 +194,9 @@ export function AdminSidebar() {
       </div>
       <nav className="sidebar-nav">
         {links.map(l => (
-          <Link key={l.to} to={l.to} className="sidebar-link">
+          <NavLink key={l.to} to={l.to} className="sidebar-link">
             <span>{l.icon}</span> {l.label}
-          </Link>
+          </NavLink>
         ))}
       </nav>
       <button className="sidebar-logout" onClick={logout}>🚪 Logout</button>
