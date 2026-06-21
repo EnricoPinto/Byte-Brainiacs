@@ -100,3 +100,6 @@ mongoose
   });
 // Force nodemon reload - env updated
 
+module.exports = app;
+
+
