@@ -60,23 +60,27 @@ app.use(morgan('dev'));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ─── MongoDB Connection Middleware ─────────────────────────────────
-let isConnected = false;
+let cachedPromise = null;
 
 const connectDB = async () => {
-  if (isConnected) {
+  if (mongoose.connection.readyState >= 1) {
     return;
   }
-  try {
-    const db = await mongoose.connect(process.env.MONGO_URI);
-    isConnected = db.connections[0].readyState;
-    console.log('✅ MongoDB connected successfully.');
-  } catch (err) {
-    console.error('❌ MongoDB connection failed:', err.message);
-    throw err;
+  if (!cachedPromise) {
+    console.log('Initializing new MongoDB connection...');
+    cachedPromise = mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 5000,
+    }).then(mongoose => {
+      console.log('✅ MongoDB connected successfully.');
+      return mongoose;
+    }).catch(err => {
+      cachedPromise = null; // allow retries
+      console.error('❌ MongoDB connection failed:', err.message);
+      throw err;
+    });
   }
+  await cachedPromise;
 };
-
-connectDB().catch(console.error);
 
 app.use(async (req, res, next) => {
   try {
