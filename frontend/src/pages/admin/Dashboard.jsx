@@ -5,7 +5,7 @@ import axios from 'axios';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import './Admin.css';
 
-const COLORS = ['#22c55e', '#ef4444', '#6366f1', '#f59e0b'];
+const COLORS = ['#22c55e', '#ef4444', '#f59e0b', '#6366f1'];
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -83,16 +83,39 @@ export default function Dashboard() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <div className="card">
-              <h3 style={{ marginBottom: '24px', fontSize: '16px' }}>🥧 Status Breakdown</h3>
-              <ResponsiveContainer width="100%" height={220}>
-                <PieChart>
-                  <Pie data={charts.statusBreakdown} cx="50%" cy="50%" innerRadius={55} outerRadius={90} dataKey="value" label={({ name, value }) => `${name}: ${value}`} labelLine={false}>
-                    {charts.statusBreakdown.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                  </Pie>
-                  <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px' }} />
-                </PieChart>
-              </ResponsiveContainer>
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <h3 style={{ marginBottom: '16px', fontSize: '16px' }}>🥧 Status Breakdown</h3>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', flex: 1, gap: '16px', flexWrap: 'wrap' }}>
+                <div style={{ width: '150px', height: '150px', flexShrink: 0 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={charts.statusBreakdown}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={45}
+                        outerRadius={65}
+                        dataKey="value"
+                        label={false}
+                      >
+                        {charts.statusBreakdown.map((_, i) => (
+                          <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '150px' }}>
+                  {charts.statusBreakdown.map((item, i) => (
+                    <div key={item.name} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px' }}>
+                      <span style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: COLORS[i % COLORS.length], display: 'inline-block', flexShrink: 0 }} />
+                      <span style={{ color: 'var(--text-secondary)' }}>{item.name}:</span>
+                      <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{item.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
