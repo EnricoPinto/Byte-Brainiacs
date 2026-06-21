@@ -59,6 +59,34 @@ app.use(morgan('dev'));
 // ─── Static Files (Uploads) ────────────────────────────────────────
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// ─── MongoDB Connection Middleware ─────────────────────────────────
+let isConnected = false;
+
+const connectDB = async () => {
+  if (isConnected) {
+    return;
+  }
+  try {
+    const db = await mongoose.connect(process.env.MONGO_URI);
+    isConnected = db.connections[0].readyState;
+    console.log('✅ MongoDB connected successfully.');
+  } catch (err) {
+    console.error('❌ MongoDB connection failed:', err.message);
+    throw err;
+  }
+};
+
+connectDB().catch(console.error);
+
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
 // ─── Routes ────────────────────────────────────────────────────────
 app.use(['/api/auth', '/auth'], authRoutes);
 app.use(['/api/participants', '/participants'], participantRoutes);
@@ -86,23 +114,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ─── MongoDB + Server Start ────────────────────────────────────────
-let isConnected = false;
-
-const connectDB = async () => {
-  if (isConnected) {
-    return;
-  }
-  try {
-    const db = await mongoose.connect(process.env.MONGO_URI);
-    isConnected = db.connections[0].readyState;
-    console.log('✅ MongoDB connected successfully.');
-  } catch (err) {
-    console.error('❌ MongoDB connection failed:', err.message);
-  }
-};
-
-connectDB();
+// ─── Server Start ──────────────────────────────────────────────────
 
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
   const PORT = process.env.PORT || 5000;
