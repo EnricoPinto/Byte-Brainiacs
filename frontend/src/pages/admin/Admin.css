@@ -103,4 +103,9 @@
 @media (max-width: 900px) {
   .admin-sidebar { display: none; }
   .admin-main { padding: 20px 16px; }
+  .admin-header { flex-direction: column; align-items: flex-start; }
+  .admin-title { font-size: 22px; }
+  .stats-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+  .filters-bar { flex-direction: column; }
+  .filters-bar .form-input { min-width: unset; width: 100% !important; max-width: 100% !important; }
 }

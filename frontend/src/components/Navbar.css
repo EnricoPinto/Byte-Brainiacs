@@ -98,6 +98,7 @@
   .navbar-links {
     position: fixed;
     top: var(--navbar-h); left: 0; right: 0;
+    z-index: 99;
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border);
     flex-direction: column;
@@ -105,11 +106,17 @@
     padding: 16px;
     gap: 4px;
     transform: translateY(-110%);
-    transition: transform 0.3s ease;
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.3s ease, opacity 0.3s ease;
     max-height: calc(100vh - var(--navbar-h));
     overflow-y: auto;
   }
-  .navbar-links.open { transform: translateY(0); }
+  .navbar-links.open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
   .navbar-links .btn { margin-left: 0; margin-top: 8px; }
   .nav-link { display: block; text-align: center; padding: 12px; }
 }

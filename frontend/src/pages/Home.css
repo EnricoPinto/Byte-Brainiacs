@@ -77,6 +77,10 @@
 }
 
 @media (max-width: 768px) {
+  .hero { padding: 100px 0 60px; min-height: auto; }
+  .hero-content { gap: 16px; }
+  .hero-desc { font-size: 15px; }
+  .hero-org { font-size: 13px; }
   .day-schedule { grid-template-columns: 1fr; }
   .timeline-item::before { display: none; }
   .cta-card { padding: 48px 24px; }
