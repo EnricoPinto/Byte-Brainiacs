@@ -61,7 +61,7 @@ export default function TeamAllocation() {
             <div>
               <h1 style={{ fontSize: '20px', fontWeight: 800 }}>Team Allocation</h1>
               <p style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
-                Select exactly 3 approved individuals to form a team
+                Select 2 or 3 approved individuals to form a team
               </p>
             </div>
           </div>
@@ -169,7 +169,7 @@ export default function TeamAllocation() {
                 <div style={{ marginBottom: '24px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                     <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Members selected</span>
-                    <span style={{ fontSize: '14px', fontWeight: 700, color: selected.length === 3 ? 'var(--emerald)' : 'var(--amber)' }}>
+                    <span style={{ fontSize: '14px', fontWeight: 700, color: selected.length >= 2 ? 'var(--emerald)' : 'var(--amber)' }}>
                       {selected.length} / 3
                     </span>
                   </div>
@@ -177,7 +177,7 @@ export default function TeamAllocation() {
                     <div style={{
                       height: '100%', borderRadius: '4px',
                       width: `${(selected.length / 3) * 100}%`,
-                      background: selected.length === 3 ? 'var(--emerald)' : 'var(--grad-primary)',
+                      background: selected.length >= 2 ? 'var(--emerald)' : 'var(--grad-primary)',
                       transition: 'width 0.3s ease, background 0.3s ease',
                     }} />
                   </div>
@@ -236,7 +236,7 @@ export default function TeamAllocation() {
                 <button
                   className="btn btn-primary"
                   style={{ width: '100%', padding: '14px' }}
-                  disabled={selected.length !== 3 || !teamName.trim() || submitting}
+                  disabled={selected.length < 2 || selected.length > 3 || !teamName.trim() || submitting}
                   onClick={allocate}
                 >
                   {submitting ? '⏳ Allocating...' : 'Allocate & Notify Members'}
