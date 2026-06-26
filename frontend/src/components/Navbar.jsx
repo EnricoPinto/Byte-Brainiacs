@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
+
 import './Navbar.css';
 
 const navLinks = [
@@ -29,7 +29,7 @@ const LINKEDIN_URL = 'https://www.linkedin.com/in/department-of-information-tech
 
 export default function Navbar() {
   const { user, logout, isAdmin } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+
   const location = useLocation();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -42,6 +42,10 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => { setMenuOpen(false); }, [location]);
+
+  // Hide the global navbar if we are in the protected Admin Portal.
+  const isAdminPortal = location.pathname.startsWith('/admin') && location.pathname !== '/admin/login';
+  if (isAdminPortal) return null;
 
   return (
     <nav className={`navbar ${scrolled ? 'navbar-scrolled' : ''}`}>
@@ -87,9 +91,7 @@ export default function Navbar() {
               <LinkedInIcon />
             </a>
           </div>
-          <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle theme">
-            {theme === 'dark' ? '☀️' : '🌙'}
-          </button>
+
           <button className={`hamburger ${menuOpen ? 'open' : ''}`} onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
             <span /><span /><span />
           </button>

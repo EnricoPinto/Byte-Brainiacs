@@ -1,58 +1,96 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import ParticleBackground from '../components/ParticleBackground';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { adminLogin, isAdmin } = useAuth();
+  
+  const { adminLogin, user } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
 
-  if (isAdmin) { navigate('/admin/dashboard'); return null; }
+  if (user?.role === 'admin') {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       await adminLogin(email, password);
-      toast.success('Welcome back!', 'Logged in as Admin.');
+      toast.success('Login Successful', 'Welcome to the admin dashboard.');
       navigate('/admin/dashboard');
     } catch (err) {
-      toast.error('Login Failed', err.response?.data?.message || 'Invalid credentials.');
+      toast.error('Login Failed', err.response?.data?.message || 'Invalid credentials');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', position: 'relative', overflow: 'hidden' }}>
-      <div className="hero-orb hero-orb-1" style={{ width: '400px', height: '400px', top: '-100px', right: '-100px' }} />
-      <div className="hero-orb hero-orb-2" style={{ width: '300px', height: '300px', bottom: '-100px', left: '-100px' }} />
-      <div style={{ width: '100%', maxWidth: '440px', position: 'relative', zIndex: 1 }}>
-        <div className="card" style={{ padding: '48px 40px' }}>
-          <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-            <div style={{ fontSize: '48px', marginBottom: '12px' }}>🔐</div>
-            <h1 style={{ fontSize: '28px', fontWeight: 700, marginBottom: '8px' }}>Admin <span className="gradient-text">Login</span></h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>ByteBrainiacs Management Portal</p>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+      <ParticleBackground particleCount={50} color="139,92,246" connectionDistance={120} speed={0.2} />
+      
+      {/* Background glow effects */}
+      <div style={{ position: 'absolute', top: '20%', right: '10%', width: '400px', height: '400px', background: 'rgba(139,92,246,0.15)', filter: 'blur(100px)', borderRadius: '50%', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: '10%', left: '10%', width: '400px', height: '400px', background: 'rgba(6,182,212,0.1)', filter: 'blur(100px)', borderRadius: '50%', pointerEvents: 'none' }} />
+      
+      <div className="card" style={{ 
+        width: '100%', maxWidth: '420px', margin: '0 24px', position: 'relative', zIndex: 1, 
+        padding: '48px 32px', textAlign: 'center',
+        boxShadow: '0 24px 80px rgba(0,0,0,0.6), 0 0 2px rgba(139,92,246,0.5)'
+      }}>
+        <div style={{ 
+          width: '64px', height: '64px', borderRadius: '16px', background: 'rgba(139,92,246,0.1)', 
+          border: '1px solid rgba(139,92,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '32px', margin: '0 auto 24px', color: 'var(--violet-light)'
+        }}>
+          🛡️
+        </div>
+        
+        <h1 style={{ fontSize: '28px', marginBottom: '8px', fontWeight: '800' }}>Admin <span className="gradient-text">Portal</span></h1>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontSize: '14px' }}>Sign in to manage ByteBrainiacs data.</p>
+        
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'left' }}>
+          <div className="form-group">
+            <label className="form-label">Email Address</label>
+            <input 
+              type="email" 
+              className="form-input" 
+              required
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="admin@bytebrainiacs.com"
+            />
           </div>
-          <form onSubmit={handleSubmit} autoComplete="off" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div className="form-group">
-              <label className="form-label">Admin Email</label>
-              <input type="email" className="form-input" value={email} onChange={e => setEmail(e.target.value)}
-                placeholder="admin@bytebrainiacs.com" autoComplete="off" required />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Password</label>
-              <input type="password" className="form-input" value={password} onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••" autoComplete="new-password" required />
-            </div>
-            <button type="submit" className="btn btn-primary" disabled={loading} style={{ marginTop: '8px' }}>
-              {loading ? '⏳ Logging in...' : '→ Login to Dashboard'}
-            </button>
-          </form>
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <input 
+              type="password" 
+              className="form-input" 
+              required
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="••••••••"
+            />
+          </div>
+          
+          <button 
+            type="submit" 
+            className="btn btn-primary" 
+            disabled={loading}
+            style={{ marginTop: '12px', padding: '14px', fontSize: '16px' }}
+          >
+            {loading ? 'Authenticating...' : 'Secure Login →'}
+          </button>
+        </form>
+        
+        <div style={{ marginTop: '24px', fontSize: '12px', color: 'var(--text-muted)' }}>
+          🔒 Restricted Access. Authorized personnel only.
         </div>
       </div>
     </div>

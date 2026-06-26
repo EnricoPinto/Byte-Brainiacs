@@ -1,130 +1,72 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import axios from 'axios';
+import ParticleBackground from '../components/ParticleBackground';
 import './Payment.css';
 
-const PaymentSuccess = () => {
+export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
   const participantId = searchParams.get('participant_id');
-  // BUG 10 FIX: Removed unused sessionId (Stripe leftover)
-
-  const [loading, setLoading] = useState(true);
   const [participant, setParticipant] = useState(null);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!participantId) {
-      setError('Missing participant ID.');
+    if (participantId) {
+      axios.get(`/api/participants/${participantId}`)
+        .then(res => setParticipant(res.data))
+        .catch(err => console.error(err))
+        .finally(() => setLoading(false));
+    } else {
       setLoading(false);
-      return;
     }
-
-    const fetchStatus = async () => {
-      try {
-        const res = await axios.get(`/api/payments/status/${participantId}`);
-        if (res.data.success) {
-          setParticipant(res.data.participant);
-        } else {
-          setError(res.data.message || 'Failed to fetch status.');
-        }
-      } catch (err) {
-        console.error(err);
-        setError(err.response?.data?.message || 'Error checking payment status.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStatus();
   }, [participantId]);
 
   if (loading) {
-    return (
-      <div className="page-content loading-center">
-        <div className="spinner"></div>
-      </div>
-    );
+    return <div className="payment-status-page"><div className="spinner"></div></div>;
   }
-
-  if (error || !participant) {
-    return (
-      <div className="page-content container payment-page">
-        <div className="glass payment-card error-card animate-fade-up">
-          <div className="status-icon error-icon">❌</div>
-          <h2 className="payment-title">Payment Verification Error</h2>
-          <p className="payment-description">
-            {error || "We couldn't retrieve your registration details."}
-          </p>
-          <div className="payment-actions">
-            <Link to="/" className="btn btn-primary">Go to Home</Link>
-            <Link to="/register" className="btn btn-outline">Try Registering Again</Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const isVerified = participant.paymentStatus === 'verified';
 
   return (
-    <div className="page-content container payment-page">
-      <div className="glass payment-card success-card animate-fade-up">
-        <div className="status-icon success-icon">✓</div>
+    <div className="payment-status-page">
+      <ParticleBackground particleCount={40} color="16,185,129" connectionDistance={100} speed={0.15} />
+      
+      <div className="payment-status-card payment-success-card">
+        <div className="status-icon-wrapper icon-success">
+          ✓
+        </div>
         
-        {isVerified ? (
-          <>
-            <h2 className="payment-title gradient-text">Payment Successful!</h2>
-            <p className="payment-description">
-              Thank you, <strong>{participant.fullName}</strong>. Your payment of <strong>₹{participant.amount}</strong> is confirmed.
-            </p>
-          </>
-        ) : (
-          <>
-            <h2 className="payment-title warning-text">Payment Processing</h2>
-            <p className="payment-description">
-              Your payment is currently processing. It should update shortly.
-            </p>
-          </>
-        )}
-
-        <div className="receipt-details">
-          <div className="receipt-header">Registration Receipt</div>
-          <div className="receipt-row">
-            <span className="receipt-label">Participant ID</span>
-            <span className="receipt-value mono">{participant._id}</span>
-          </div>
-          <div className="receipt-row">
-            <span className="receipt-label">Registration Type</span>
-            <span className="receipt-value capitalize">{participant.registrationType}</span>
-          </div>
-          {participant.registrationType === 'team' && (
+        <h1 className="status-title title-success">Payment Successful!</h1>
+        <p className="status-desc">
+          Your registration for ByteBrainiacs is confirmed. We've sent the details to your email address.
+        </p>
+        
+        {participant && (
+          <div className="receipt-box">
             <div className="receipt-row">
-              <span className="receipt-label">Team Name</span>
-              <span className="receipt-value font-bold">{participant.teamName}</span>
+              <span className="receipt-label">Participant ID</span>
+              <span className="receipt-value">{participant.participantId}</span>
             </div>
-          )}
-          <div className="receipt-row">
-            <span className="receipt-label">Email Address</span>
-            <span className="receipt-value">{participant.email}</span>
+            <div className="receipt-row">
+              <span className="receipt-label">Name</span>
+              <span className="receipt-value">{participant.fullName}</span>
+            </div>
+            <div className="receipt-row">
+              <span className="receipt-label">Type</span>
+              <span className="receipt-value" style={{ textTransform: 'capitalize' }}>
+                {participant.registrationType}
+                {participant.registrationType === 'team' && ` (${participant.teamMembers?.length + 1} members)`}
+              </span>
+            </div>
+            <div className="receipt-row">
+              <span className="receipt-label">Payment Status</span>
+              <span className="receipt-value" style={{ color: 'var(--emerald-light)' }}>Verified</span>
+            </div>
           </div>
-          <div className="divider"></div>
-          <div className="receipt-row total-row">
-            <span className="receipt-label">Amount Paid</span>
-            <span className="receipt-value payment-amount">₹{participant.amount}</span>
-          </div>
-        </div>
-
-        <div className="payment-note">
-          A confirmation email has been sent to <strong>{participant.email}</strong> with details of your registration.
-        </div>
-
-        <div className="payment-actions">
-          <Link to="/" className="btn btn-primary">Go to Homepage</Link>
-          <Link to="/rules" className="btn btn-outline">Read Hackathon Rules</Link>
+        )}
+        
+        <div className="status-actions">
+          <Link to="/" className="btn btn-primary" style={{ width: '100%' }}>Return to Home</Link>
         </div>
       </div>
     </div>
   );
-};
-
-export default PaymentSuccess;
+}

@@ -193,6 +193,19 @@ const sendTeamApprovalEmail = async (teamName, memberEmails, memberName) => {
   });
 };
 
+const sendTeamRemovalEmail = async (participant, teamName) => {
+  await sendEmail({
+    to: participant.email,
+    subject: 'ByteBrainiacs — Team Update',
+    html: emailTemplate(`
+      <h2 style="${emailStyles.h2}">Team Update ℹ️</h2>
+      <p style="${emailStyles.p}">Hello <strong style="${emailStyles.strong}">${participant.fullName}</strong>,</p>
+      <p style="${emailStyles.p}">You have been removed from <strong style="${emailStyles.strong}">${teamName}</strong> by an administrator.</p>
+      <p style="${emailStyles.p}">You have been returned to the unallocated participants pool. The administration team will allocate you to a new team shortly.</p>
+    `),
+  });
+};
+
 module.exports = {
   sendRegistrationEmail,
   sendTeamRegistrationEmail,
@@ -200,5 +213,6 @@ module.exports = {
   sendRejectionEmail,
   sendTeamAllocationEmail,
   sendTeamApprovalEmail,
+  sendTeamRemovalEmail,
   sendEmail,
 };

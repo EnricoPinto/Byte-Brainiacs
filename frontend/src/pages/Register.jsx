@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../context/ToastContext';
+import AnimatedSection from '../components/AnimatedSection';
+import ParticleBackground from '../components/ParticleBackground';
 import './Register.css';
 
 const STEPS = ['Personal Info', 'Registration Type', 'Review & Pay'];
@@ -31,20 +34,20 @@ const MemberFields = ({ prefix, label, register, errors }) => (
         { name: 'college', label: 'College/University', type: 'text', required: true },
         { name: 'degree', label: 'Degree/Course', type: 'text', required: true },
       ].map(f => (
-        <div key={f.name} className="form-group">
-          <label className="form-label">{f.label} {f.required && <span style={{ color: 'var(--red)' }}>*</span>}</label>
+        <div key={f.name} className="form-group form-floating">
           <input
             type={f.type}
             className="form-input"
+            placeholder=" "
             {...register(`${prefix}.${f.name}`, { required: f.required ? `${f.label} is required` : false })}
           />
+          <label className="form-label">{f.label} {f.required && <span style={{ color: 'var(--red)' }}>*</span>}</label>
           {errors?.[prefix]?.[f.name] && <span className="form-error">{errors[prefix][f.name].message}</span>}
         </div>
       ))}
 
       {/* Year of Study — dropdown to match backend enum */}
-      <div className="form-group">
-        <label className="form-label">Year of Study <span style={{ color: 'var(--red)' }}>*</span></label>
+      <div className="form-group form-floating">
         <select
           className="form-input"
           {...register(`${prefix}.yearOfStudy`, { required: 'Year of Study is required' })}
@@ -54,6 +57,7 @@ const MemberFields = ({ prefix, label, register, errors }) => (
             <option key={y} value={y}>{y}</option>
           ))}
         </select>
+        <label className="form-label">Year of Study <span style={{ color: 'var(--red)' }}>*</span></label>
         {errors?.[prefix]?.yearOfStudy && <span className="form-error">⚠ {errors[prefix].yearOfStudy.message}</span>}
       </div>
     </div>
@@ -149,7 +153,7 @@ export default function Register() {
             contact: participant.mobile,
           },
           theme: {
-            color: '#00e5ff',
+            color: '#8b5cf6',
           },
           modal: {
             ondismiss: function () {
@@ -170,11 +174,18 @@ export default function Register() {
     }
   };
 
+  const pageVariants = {
+    enter: { opacity: 0, x: 30 },
+    center: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: -30 },
+  };
+
   return (
     <div className="register-page">
       <div className="register-hero">
+        <ParticleBackground particleCount={40} color="139,92,246" connectionDistance={100} speed={0.2} />
         <div className="hero-orb hero-orb-1" style={{ width: '300px', height: '300px' }} />
-        <div className="container" style={{ position: 'relative', zIndex: 1, textAlign: 'center', paddingTop: '60px' }}>
+        <div className="container" style={{ position: 'relative', zIndex: 1, textAlign: 'center', paddingTop: '20px' }}>
           <p className="section-tag">// join the hackathon</p>
           <h1 className="section-title">Register for <span className="gradient-text">ByteBrainiacs</span></h1>
         </div>
@@ -193,223 +204,214 @@ export default function Register() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          {/* ── Step 0: Personal Info ── */}
-          {step === 0 && (
-            <div className="form-card animate-fade-up">
-              <h2 className="form-section-title">Personal Information</h2>
-              <div className="form-grid-2">
-                {[
-                  { name: 'fullName', label: 'Full Name', type: 'text', required: true },
-                  { name: 'email', label: 'Email Address', type: 'email', required: true },
-                  { name: 'mobile', label: 'Mobile Number', type: 'tel', required: true, pattern: /^[6-9]\d{9}$/ },
-                  { name: 'college', label: 'College / University', type: 'text', required: true },
-                  { name: 'degree', label: 'Degree / Course', type: 'text', required: true },
-                ].map(f => (
-                  <div key={f.name} className="form-group">
-                    <label className="form-label">{f.label} <span style={{ color: 'var(--red)' }}>*</span></label>
-                    <input type={f.type} className="form-input"
-                      {...register(f.name, {
-                        required: `${f.label} is required`,
-                        ...(f.pattern ? { pattern: { value: f.pattern, message: 'Invalid number' } } : {}),
-                        ...(f.type === 'email' ? { pattern: { value: /^\S+@\S+\.\S+$/, message: 'Invalid email' } } : {}),
-                      })}
-                    />
-                    {errors[f.name] && <span className="form-error">⚠ {errors[f.name].message}</span>}
-                  </div>
-                ))}
-
-                <div className="form-group">
-                  <label className="form-label">Year of Study <span style={{ color: 'var(--red)' }}>*</span></label>
-                  <select className="form-input" {...register('yearOfStudy', { required: 'Year is required' })}>
-                    <option value="">Select Year</option>
-                    {['1st Year', '2nd Year', '3rd Year', 'Final Year', 'Postgraduate'].map(y => (
-                      <option key={y} value={y}>{y}</option>
-                    ))}
-                  </select>
-                  {errors.yearOfStudy && <span className="form-error">⚠ {errors.yearOfStudy.message}</span>}
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">City <span style={{ color: 'var(--red)' }}>*</span></label>
-                  <input type="text" className="form-input" {...register('city', { required: 'City is required' })} />
-                  {errors.city && <span className="form-error">⚠ {errors.city.message}</span>}
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">State <span style={{ color: 'var(--red)' }}>*</span></label>
-                  <select className="form-input" {...register('state', { required: 'State is required' })}>
-                    <option value="">Select State</option>
-                    {indianStates.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                  {errors.state && <span className="form-error">⚠ {errors.state.message}</span>}
-                </div>
-
-                <div className="form-group form-full">
-                  <label className="form-label">College ID Card (JPG, PNG or PDF — max 2MB) <span style={{ color: 'var(--red)' }}>*</span></label>
-                  <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="form-input" style={{ padding: '10px' }}
-                    {...register('collegeId', {
-                      required: 'College ID is required for verification',
-                      validate: {
-                        maxSize: (files) => {
-                          if (!files?.[0]) return true;
-                          return files[0].size <= 2 * 1024 * 1024 || 'File must be 2MB or smaller';
-                        },
-                      },
-                    })}
-                  />
-                  {errors.collegeId && <span className="form-error">⚠ {errors.collegeId.message}</span>}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── Step 1: Registration Type ── */}
-          {step === 1 && (
-            <div className="form-card animate-fade-up">
-              <h2 className="form-section-title">Registration Type</h2>
-              <div className="reg-type-grid">
-                {[
-                  { value: 'individual', icon: '👤', title: 'Individual — ₹25', desc: 'Register alone. Admin will allocate you into a team.' },
-                  { value: 'team', icon: '👥', title: 'Team (2-3 Members)', desc: 'Register with your team. Choose 2 or 3 members.' },
-                ].map(opt => (
-                  <label key={opt.value} className={`reg-type-card ${regType === opt.value ? 'selected' : ''}`}>
-                    <input type="radio" value={opt.value} {...register('registrationType', { required: 'Select a type' })}
-                      onChange={(e) => { setValue('registrationType', opt.value, { shouldValidate: true }); setRegType(opt.value); }} />
-                    <div className="reg-type-icon">{opt.icon}</div>
-                    <div className="reg-type-title">{opt.title}</div>
-                    <div className="reg-type-desc">{opt.desc}</div>
-                  </label>
-                ))}
-              </div>
-              {errors.registrationType && <span className="form-error" style={{ marginTop: '12px', display: 'block' }}>⚠ {errors.registrationType.message}</span>}
-
-              {regType === 'team' && (
-                <div style={{ marginTop: '32px' }}>
-                  <div className="form-group" style={{ marginBottom: '24px' }}>
-                    <label className="form-label">Team Name <span style={{ color: 'var(--red)' }}>*</span></label>
-                    <input type="text" className="form-input" {...register('teamName', { required: 'Team name is required' })} />
-                    {errors.teamName && <span className="form-error">⚠ {errors.teamName.message}</span>}
-                  </div>
-
-                  {/* Team Size Selector */}
-                  <div style={{ marginBottom: '24px' }}>
-                    <label className="form-label" style={{ marginBottom: '12px', display: 'block' }}>Team Size <span style={{ color: 'var(--red)' }}>*</span></label>
-                    <div style={{ display: 'flex', gap: '12px' }}>
-                      {[2, 3].map(size => (
-                        <button
-                          key={size}
-                          type="button"
-                          onClick={() => setTeamSize(size)}
-                          style={{
-                            flex: 1, padding: '16px', borderRadius: '12px', cursor: 'pointer',
-                            border: `2px solid ${teamSize === size ? 'var(--violet)' : 'var(--border)'}`,
-                            background: teamSize === size ? 'rgba(99,102,241,0.1)' : 'var(--bg-card)',
-                            color: 'var(--text-primary)', fontWeight: 600, fontSize: '15px',
-                            transition: 'var(--transition)',
-                          }}
-                        >
-                          {size} Members — ₹{size * 25}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div style={{ background: 'rgba(0,229,255,0.05)', border: '1px solid rgba(0,229,255,0.15)', borderRadius: '12px', padding: '16px', marginBottom: '24px' }}>
-                    <p style={{ color: 'var(--cyan)', fontSize: '14px' }}>
-                      ℹ️ The personal info you filled in Step 1 is for the <strong>Team Leader</strong>. Fill in details for additional member{teamSize === 3 ? 's' : ''} below.
-                    </p>
-                  </div>
-                  <MemberFields prefix="teamMembers[0]" label="👤 Member 2" register={register} errors={errors} />
-                  {teamSize === 3 && (
-                    <MemberFields prefix="teamMembers[1]" label="👤 Member 3" register={register} errors={errors} />
-                  )}
-                </div>
-              )}
-
-              {/* Live Pricing Display */}
-              {regType && (
-                <div style={{
-                  marginTop: '28px', padding: '20px', borderRadius: '12px',
-                  background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)',
-                  textAlign: 'center',
-                }}>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>Registration Fee</p>
-                  <div style={{ fontSize: '32px', fontWeight: 700, color: 'var(--cyan)' }}>
-                    ₹{getTotalAmount()}
-                  </div>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginTop: '6px' }}>
-                    ₹25 × {getMemberCount()} participant{getMemberCount() > 1 ? 's' : ''}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── Step 2: Review & Pay ── */}
-          {step === 2 && (
-            <div className="form-card animate-fade-up">
-              <h2 className="form-section-title">Review & Pay</h2>
-              {(() => {
-                const v = getValues();
-                const count = getMemberCount();
-                const total = getTotalAmount();
-                return (
-                  <div>
-                    {/* Registration Summary */}
-                    <div style={{ marginBottom: '28px' }}>
-                      <h3 style={{ fontSize: '16px', marginBottom: '16px', color: 'var(--violet-light)' }}>📋 Registration Summary</h3>
-                      <div style={{ background: 'var(--bg-secondary)', borderRadius: '12px', padding: '20px', border: '1px solid var(--border)' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '14px' }}>
-                          <div><span style={{ color: 'var(--text-muted)' }}>Name:</span> <strong>{v.fullName}</strong></div>
-                          <div><span style={{ color: 'var(--text-muted)' }}>Email:</span> <strong>{v.email}</strong></div>
-                          <div><span style={{ color: 'var(--text-muted)' }}>College:</span> <strong>{v.college}</strong></div>
-                          <div><span style={{ color: 'var(--text-muted)' }}>Type:</span> <strong style={{ textTransform: 'capitalize' }}>{v.registrationType}{regType === 'team' ? ` (${count} members)` : ''}</strong></div>
-                          {v.teamName && <div style={{ gridColumn: '1/-1' }}><span style={{ color: 'var(--text-muted)' }}>Team:</span> <strong>{v.teamName}</strong></div>}
-                        </div>
+          <AnimatePresence mode="wait">
+            {/* ── Step 0: Personal Info ── */}
+            {step === 0 && (
+              <motion.div key="step0" variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }}>
+                <div className="form-card">
+                  <h2 className="form-section-title">Personal Information</h2>
+                  <div className="form-grid-2">
+                    {[
+                      { name: 'fullName', label: 'Full Name', type: 'text', required: true },
+                      { name: 'email', label: 'Email Address', type: 'email', required: true },
+                      { name: 'mobile', label: 'Mobile Number', type: 'tel', required: true, pattern: /^[6-9]\d{9}$/ },
+                      { name: 'college', label: 'College / University', type: 'text', required: true },
+                      { name: 'degree', label: 'Degree / Course', type: 'text', required: true },
+                    ].map(f => (
+                      <div key={f.name} className="form-group form-floating">
+                        <input type={f.type} className="form-input" placeholder=" "
+                          {...register(f.name, {
+                            required: `${f.label} is required`,
+                            ...(f.pattern ? { pattern: { value: f.pattern, message: 'Invalid number' } } : {}),
+                            ...(f.type === 'email' ? { pattern: { value: /^\S+@\S+\.\S+$/, message: 'Invalid email' } } : {}),
+                          })}
+                        />
+                        <label className="form-label">{f.label} <span style={{ color: 'var(--red)' }}>*</span></label>
+                        {errors[f.name] && <span className="form-error">⚠ {errors[f.name].message}</span>}
                       </div>
+                    ))}
+
+                    <div className="form-group form-floating">
+                      <select className="form-input" {...register('yearOfStudy', { required: 'Year is required' })}>
+                        <option value="">Select Year</option>
+                        {['1st Year', '2nd Year', '3rd Year', 'Final Year', 'Postgraduate'].map(y => (
+                          <option key={y} value={y}>{y}</option>
+                        ))}
+                      </select>
+                      <label className="form-label">Year of Study <span style={{ color: 'var(--red)' }}>*</span></label>
+                      {errors.yearOfStudy && <span className="form-error">⚠ {errors.yearOfStudy.message}</span>}
                     </div>
 
-                    {/* Team Members List */}
-                    {regType === 'team' && v.teamMembers && (
-                      <div style={{ marginBottom: '28px' }}>
-                        <h3 style={{ fontSize: '16px', marginBottom: '12px', color: 'var(--violet-light)' }}>👥 Team Members</h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          <div style={{ padding: '12px 16px', background: 'rgba(99,102,241,0.08)', borderRadius: '8px', border: '1px solid rgba(99,102,241,0.2)', fontSize: '14px' }}>
-                            <strong>1. {v.fullName}</strong> <span style={{ color: 'var(--cyan)' }}>(Leader)</span> — {v.email}
-                          </div>
-                          {v.teamMembers.slice(0, teamSize - 1).map((m, i) => (
-                            <div key={i} style={{ padding: '12px 16px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '14px' }}>
-                              <strong>{i + 2}. {m?.fullName || '—'}</strong> — {m?.email || '—'}
-                            </div>
+                    <div className="form-group form-floating">
+                      <input type="text" className="form-input" placeholder=" " {...register('city', { required: 'City is required' })} />
+                      <label className="form-label">City <span style={{ color: 'var(--red)' }}>*</span></label>
+                      {errors.city && <span className="form-error">⚠ {errors.city.message}</span>}
+                    </div>
+
+                    <div className="form-group form-floating">
+                      <select className="form-input" {...register('state', { required: 'State is required' })}>
+                        <option value="">Select State</option>
+                        {indianStates.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                      <label className="form-label">State <span style={{ color: 'var(--red)' }}>*</span></label>
+                      {errors.state && <span className="form-error">⚠ {errors.state.message}</span>}
+                    </div>
+
+                    <div className="form-group form-full">
+                      <label className="form-label">College ID Card (JPG, PNG or PDF — max 2MB) <span style={{ color: 'var(--red)' }}>*</span></label>
+                      <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="form-input" style={{ padding: '10px' }}
+                        {...register('collegeId', {
+                          required: 'College ID is required for verification',
+                          validate: {
+                            maxSize: (files) => {
+                              if (!files?.[0]) return true;
+                              return files[0].size <= 2 * 1024 * 1024 || 'File must be 2MB or smaller';
+                            },
+                          },
+                        })}
+                      />
+                      {errors.collegeId && <span className="form-error">⚠ {errors.collegeId.message}</span>}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* ── Step 1: Registration Type ── */}
+            {step === 1 && (
+              <motion.div key="step1" variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }}>
+                <div className="form-card">
+                  <h2 className="form-section-title">Registration Type</h2>
+                  <div className="reg-type-grid">
+                    {[
+                      { value: 'individual', icon: '👤', title: 'Individual — ₹25', desc: 'Register alone. Admin will allocate you into a team.' },
+                      { value: 'team', icon: '👥', title: 'Team (2-3 Members)', desc: 'Register with your team. Choose 2 or 3 members.' },
+                    ].map(opt => (
+                      <label key={opt.value} className={`reg-type-card ${regType === opt.value ? 'selected' : ''}`}>
+                        <input type="radio" value={opt.value} {...register('registrationType', { required: 'Select a type' })}
+                          onChange={(e) => { setValue('registrationType', opt.value, { shouldValidate: true }); setRegType(opt.value); }} />
+                        <div className="reg-type-icon">{opt.icon}</div>
+                        <div className="reg-type-title">{opt.title}</div>
+                        <div className="reg-type-desc">{opt.desc}</div>
+                      </label>
+                    ))}
+                  </div>
+                  {errors.registrationType && <span className="form-error" style={{ marginTop: '12px', display: 'block' }}>⚠ {errors.registrationType.message}</span>}
+
+                  {regType === 'team' && (
+                    <div style={{ marginTop: '32px' }}>
+                      <div className="form-group form-floating" style={{ marginBottom: '24px' }}>
+                        <input type="text" className="form-input" placeholder=" " {...register('teamName', { required: 'Team name is required' })} />
+                        <label className="form-label">Team Name <span style={{ color: 'var(--red)' }}>*</span></label>
+                        {errors.teamName && <span className="form-error">⚠ {errors.teamName.message}</span>}
+                      </div>
+
+                      {/* Team Size Selector */}
+                      <div style={{ marginBottom: '24px' }}>
+                        <label className="form-label" style={{ marginBottom: '12px', display: 'block' }}>Team Size <span style={{ color: 'var(--red)' }}>*</span></label>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                          {[2, 3].map(size => (
+                            <button
+                              key={size}
+                              type="button"
+                              onClick={() => setTeamSize(size)}
+                              className={`team-size-btn ${teamSize === size ? 'active' : ''}`}
+                            >
+                              {size} Members — ₹{size * 25}
+                            </button>
                           ))}
                         </div>
                       </div>
-                    )}
 
-                    {/* Payment Amount */}
-                    <div style={{
-                      background: 'rgba(0,229,255,0.05)', padding: '28px', borderRadius: '12px',
-                      border: '1px solid rgba(0,229,255,0.2)', textAlign: 'center', marginBottom: '24px',
-                    }}>
-                      <h3 style={{ fontSize: '16px', marginBottom: '8px', color: 'var(--text-secondary)' }}>Total Registration Fee</h3>
-                      <div style={{ fontSize: '48px', fontWeight: 'bold', color: 'var(--cyan)' }}>
-                        ₹{total}
+                      <div className="info-banner">
+                        <p>
+                          ℹ️ The personal info you filled in Step 1 is for the <strong>Team Leader</strong>. Fill in details for additional member{teamSize === 3 ? 's' : ''} below.
+                        </p>
                       </div>
-                      <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '8px' }}>
-                        ₹25 × {count} participant{count > 1 ? 's' : ''} • Powered by Razorpay
-                      </p>
+                      <MemberFields prefix="teamMembers[0]" label="👤 Member 2" register={register} errors={errors} />
+                      {teamSize === 3 && (
+                        <MemberFields prefix="teamMembers[1]" label="👤 Member 3" register={register} errors={errors} />
+                      )}
                     </div>
+                  )}
 
-                    <div style={{ padding: '14px', background: 'rgba(34,197,94,0.08)', borderRadius: '12px', border: '1px solid rgba(34,197,94,0.2)' }}>
-                      <p style={{ color: '#4ade80', fontSize: '14px' }}>
-                        🔒 You'll be securely prompted by Razorpay to complete your payment. By proceeding, you agree to the Rules & Guidelines of ByteBrainiacs.
+                  {/* Live Pricing Display */}
+                  {regType && (
+                    <div className="pricing-display">
+                      <p className="pricing-label">Registration Fee</p>
+                      <div className="pricing-amount">₹{getTotalAmount()}</div>
+                      <p className="pricing-breakdown">
+                        ₹25 × {getMemberCount()} participant{getMemberCount() > 1 ? 's' : ''}
                       </p>
                     </div>
-                  </div>
-                );
-              })()}
-            </div>
-          )}
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {/* ── Step 2: Review & Pay ── */}
+            {step === 2 && (
+              <motion.div key="step2" variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }}>
+                <div className="form-card">
+                  <h2 className="form-section-title">Review & Pay</h2>
+                  {(() => {
+                    const v = getValues();
+                    const count = getMemberCount();
+                    const total = getTotalAmount();
+                    return (
+                      <div>
+                        {/* Registration Summary */}
+                        <div style={{ marginBottom: '28px' }}>
+                          <h3 className="review-heading">📋 Registration Summary</h3>
+                          <div className="review-card">
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '14px' }}>
+                              <div><span style={{ color: 'var(--text-muted)' }}>Name:</span> <strong>{v.fullName}</strong></div>
+                              <div><span style={{ color: 'var(--text-muted)' }}>Email:</span> <strong>{v.email}</strong></div>
+                              <div><span style={{ color: 'var(--text-muted)' }}>College:</span> <strong>{v.college}</strong></div>
+                              <div><span style={{ color: 'var(--text-muted)' }}>Type:</span> <strong style={{ textTransform: 'capitalize' }}>{v.registrationType}{regType === 'team' ? ` (${count} members)` : ''}</strong></div>
+                              {v.teamName && <div style={{ gridColumn: '1/-1' }}><span style={{ color: 'var(--text-muted)' }}>Team:</span> <strong>{v.teamName}</strong></div>}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Team Members List */}
+                        {regType === 'team' && v.teamMembers && (
+                          <div style={{ marginBottom: '28px' }}>
+                            <h3 className="review-heading">👥 Team Members</h3>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                              <div className="team-member-row leader">
+                                <strong>1. {v.fullName}</strong> <span style={{ color: 'var(--violet-light)' }}>(Leader)</span> — {v.email}
+                              </div>
+                              {v.teamMembers.slice(0, teamSize - 1).map((m, i) => (
+                                <div key={i} className="team-member-row">
+                                  <strong>{i + 2}. {m?.fullName || '—'}</strong> — {m?.email || '—'}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Payment Amount */}
+                        <div className="payment-total-card">
+                          <h3>Total Registration Fee</h3>
+                          <div className="payment-total-amount">₹{total}</div>
+                          <p className="payment-total-info">
+                            ₹25 × {count} participant{count > 1 ? 's' : ''} • Powered by Razorpay
+                          </p>
+                        </div>
+
+                        <div className="security-notice">
+                          <p>
+                            🔒 You'll be securely prompted by Razorpay to complete your payment. By proceeding, you agree to the Rules & Guidelines of ByteBrainiacs.
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Navigation */}
           <div className="form-nav">

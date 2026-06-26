@@ -1,0 +1,32 @@
+.skeleton-wrapper {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.skeleton-row {
+  display: flex;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.skeleton-header {
+  background: rgba(0,0,0,0.1);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.skeleton-box {
+  background: rgba(139,92,246,0.1);
+  border-radius: 4px;
+}
+
+.skeleton-pulse {
+  animation: pulse-bg 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-bg {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}

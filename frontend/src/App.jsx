@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
-import { ThemeProvider } from './context/ThemeContext';
+
 import { ToastProvider } from './context/ToastContext';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -19,6 +19,7 @@ const PreviousParticipantsAdmin = lazy(() => import('./pages/admin/PreviousParti
 const TeamList = lazy(() => import('./pages/admin/TeamList'));
 const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'));
 const PaymentCancel = lazy(() => import('./pages/PaymentCancel'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 const PageLoader = () => (
   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: 'var(--text-primary)', fontSize: '1.2rem' }}>
@@ -28,7 +29,7 @@ const PageLoader = () => (
 
 export default function App() {
   return (
-    <ThemeProvider>
+
       <AuthProvider>
         <ToastProvider>
           <BrowserRouter>
@@ -51,12 +52,13 @@ export default function App() {
                     <Route path="team-allocation" element={<TeamAllocation />} />
                     <Route path="previous-participants" element={<PreviousParticipantsAdmin />} />
                   </Route>
+                  <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
             </div>
           </BrowserRouter>
         </ToastProvider>
       </AuthProvider>
-    </ThemeProvider>
+
   );
 }

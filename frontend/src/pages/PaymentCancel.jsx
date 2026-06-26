@@ -1,35 +1,43 @@
-import { useSearchParams, Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import ParticleBackground from '../components/ParticleBackground';
 import './Payment.css';
 
-const PaymentCancel = () => {
+export default function PaymentCancel() {
   const [searchParams] = useSearchParams();
   const participantId = searchParams.get('participant_id');
 
   return (
-    <div className="page-content container payment-page">
-      <div className="glass payment-card cancel-card animate-fade-up">
-        <div className="status-icon cancel-icon">!</div>
-        <h2 className="payment-title gradient-text-cool">Payment Cancelled</h2>
-        <p className="payment-description">
-          It looks like you cancelled the payment process. Your registration details are saved, but your spot is not confirmed until the payment goes through.
+    <div className="payment-status-page">
+      <ParticleBackground particleCount={40} color="249,115,22" connectionDistance={100} speed={0.15} />
+      
+      <div className="payment-status-card payment-cancel-card">
+        <div className="status-icon-wrapper icon-cancel">
+          !
+        </div>
+        
+        <h1 className="status-title title-cancel">Payment Cancelled</h1>
+        <p className="status-desc">
+          Your payment was not completed. If money was deducted, it will be refunded within 3-5 business days.
         </p>
-
-        <div className="payment-instructions bg-secondary">
-          <h4>How to complete your registration:</h4>
-          <ul>
-            <li>Click the button below to head back to the registration page.</li>
-            <li>Fill out the form again to trigger a new secure payment checkout.</li>
-            <li>If you faced a card decline, please try using another card or contact your bank.</li>
-          </ul>
+        
+        <div className="receipt-box" style={{ textAlign: 'center' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
+            Your registration is currently <strong style={{ color: 'var(--orange-light)' }}>pending</strong>. 
+            You can try paying again to confirm your spot.
+          </p>
         </div>
-
-        <div className="payment-actions">
-          <Link to={`/register`} className="btn btn-primary">Try Registering Again</Link>
-          <Link to="/" className="btn btn-outline">Back to Home</Link>
+        
+        <div className="status-actions">
+          <Link to="/" className="btn btn-ghost">Return to Home</Link>
+          <Link to="/register" className="btn btn-warn">Try Again</Link>
         </div>
+        
+        {participantId && (
+          <p style={{ marginTop: '24px', fontSize: '12px', color: 'var(--text-muted)' }}>
+            Reference ID: {participantId}
+          </p>
+        )}
       </div>
     </div>
   );
-};
-
-export default PaymentCancel;
+}

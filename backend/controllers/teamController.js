@@ -2,7 +2,7 @@ const Team = require('../models/Team');
 const Participant = require('../models/Participant');
 const Notification = require('../models/Notification');
 const ActivityLog = require('../models/ActivityLog');
-const { sendTeamAllocationEmail, sendTeamApprovalEmail } = require('../utils/email');
+const { sendTeamAllocationEmail, sendTeamApprovalEmail, sendTeamRemovalEmail } = require('../utils/email');
 
 // GET /api/teams
 const getTeams = async (req, res) => {
@@ -153,4 +153,83 @@ const allocateTeam = async (req, res) => {
   }
 };
 
-module.exports = { getTeams, updateTeamStatus, getApprovedIndividuals, allocateTeam };
+// PUT /api/teams/:id/members
+const editTeamMembers = async (req, res) => {
+  try {
+    const teamId = req.params.id;
+    const { memberIds } = req.body;
+
+    if (!memberIds || memberIds.length !== 3) {
+      return res.status(400).json({ success: false, message: 'Exactly 3 members must be selected.' });
+    }
+
+    const team = await Team.findById(teamId).populate('members');
+    if (!team) {
+      return res.status(404).json({ success: false, message: 'Team not found.' });
+    }
+
+    // Check all are approved individuals without a team (or already in THIS team)
+    const newMembers = await Participant.find({
+      _id: { $in: memberIds },
+      registrationType: 'individual',
+      status: 'approved',
+    });
+
+    if (newMembers.length !== 3) {
+      return res.status(400).json({ success: false, message: 'Some selected participants are not eligible.' });
+    }
+
+    // Check none already in a DIFFERENT team
+    const alreadyInOtherTeam = newMembers.filter((m) => m.teamId && m.teamId.toString() !== teamId);
+    if (alreadyInOtherTeam.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `${alreadyInOtherTeam.map((m) => m.fullName).join(', ')} already belong to another team.`,
+      });
+    }
+
+    // Determine who was removed and who was added
+    const oldMemberIds = team.members.map(m => m._id.toString());
+    const addedMembers = newMembers.filter(m => !oldMemberIds.includes(m._id.toString()));
+    const removedMembers = team.members.filter(m => !memberIds.includes(m._id.toString()));
+
+    // Update removed members
+    if (removedMembers.length > 0) {
+      const removedIds = removedMembers.map(m => m._id);
+      await Participant.updateMany({ _id: { $in: removedIds } }, { teamId: null });
+      for (const m of removedMembers) {
+        await sendTeamRemovalEmail(m, team.teamName);
+      }
+    }
+
+    // Update added members
+    if (addedMembers.length > 0) {
+      const addedIds = addedMembers.map(m => m._id);
+      await Participant.updateMany({ _id: { $in: addedIds } }, { teamId: team._id });
+      for (const member of addedMembers) {
+        const teammates = newMembers.filter((m) => m._id.toString() !== member._id.toString());
+        await sendTeamAllocationEmail(member, team.teamName, teammates);
+      }
+    }
+
+    // Update team document
+    team.members = memberIds;
+    await team.save();
+
+    await ActivityLog.create({
+      adminId: req.user._id,
+      adminName: req.user.name,
+      action: 'Edited Team Members',
+      targetType: 'team',
+      targetId: team._id,
+      targetName: team.teamName,
+      details: `New members: ${newMembers.map((m) => m.fullName).join(', ')}`,
+    });
+
+    res.json({ success: true, message: 'Team members updated successfully.', team });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+module.exports = { getTeams, updateTeamStatus, getApprovedIndividuals, allocateTeam, editTeamMembers };
